@@ -1,0 +1,15 @@
+{
+  "source_repository": "https://github.com/boricuapab/pyrite64mia",
+  "source_commit": "1794ffad169f453bfc992021c18d7e6756609a70",
+  "docs_site": "https://hailtododongo.github.io/pyrite64/",
+  "snapshot_utc": "2026-10-12T20:08:57.904157+00:00",
+  "counts": {
+    "docs": 64,
+    "source": 721,
+    "website": 197
+  },
+  "website_attempted": true,
+  "website_failures": [],
+  "website_snapshot_utc": "2026-10-12T19:58:28.310348+00:00",
+  "scope": "All repo Markdown/RST docs, first-party editor/runtime source, examples, tests, built-in nodes/scripts, build configuration, tool scripts, shaders and themes; all reachable documentation HTML pages. Excludes vendored third-party APIs, media and binaries."
+}

@@ -1,0 +1,4 @@
+# Start the HTTP server first. Add this table to your Codex config.toml.
+[mcp_servers.pyrite64]
+url = "http://127.0.0.1:8974/mcp"
+tool_timeout_sec = 1800

@@ -1,0 +1,75 @@
+{
+  "source_commit": "1794ffad169f453bfc992021c18d7e6756609a70",
+  "components": [
+    {
+      "id": 0,
+      "name": "Code",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/code.html"
+    },
+    {
+      "id": 1,
+      "name": "Model (Static)",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/model.html"
+    },
+    {
+      "id": 2,
+      "name": "Light",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/light.html"
+    },
+    {
+      "id": 3,
+      "name": "Camera",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/camera.html"
+    },
+    {
+      "id": 4,
+      "name": "Collision-Mesh",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/collMesh.html"
+    },
+    {
+      "id": 5,
+      "name": "Collider",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/collBody.html"
+    },
+    {
+      "id": 6,
+      "name": "Audio (2D)",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/audio2d.html"
+    },
+    {
+      "id": 7,
+      "name": "Constraint",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/constraint.html"
+    },
+    {
+      "id": 8,
+      "name": "Culling",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/culling.html"
+    },
+    {
+      "id": 9,
+      "name": "Node Graph",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/nodeGraph.html"
+    },
+    {
+      "id": 10,
+      "name": "Model (Animated)",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/animModel.html"
+    },
+    {
+      "id": 11,
+      "name": "Rigid-Body",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/rigidBody.html"
+    },
+    {
+      "id": 12,
+      "name": "Character-Body",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/charBody.html"
+    },
+    {
+      "id": 13,
+      "name": "Surface",
+      "documentation": "https://hailtododongo.github.io/pyrite64/docs/manual/editor/components/surface.html"
+    }
+  ]
+}

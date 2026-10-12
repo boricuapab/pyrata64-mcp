@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "pyrite64": {
+      "command": "C:/path/to/pyrata64-mcp/.venv/Scripts/python.exe",
+      "args": ["-m", "pyrite64_mcp.server", "--transport", "stdio", "--mode", "live", "--project", "C:/path/to/game", "--executable", "C:/path/to/pyrite64mia/pyrite64.exe", "--bridge-dir", "C:/path/to/pyrata64-mcp/.pyrite64-mcp/bridge"],
+      "env": {"PYTHONPATH": "C:/path/to/pyrata64-mcp/src"}
+    }
+  }
+}
