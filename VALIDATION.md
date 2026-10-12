@@ -25,3 +25,18 @@ CI is configured for Linux and Windows with Python 3.11 and 3.12. Its outcome
 is separate from these local checks. No game ROM, emulator or N64 hardware
 test is claimed. The local run used the source-tree launcher; a clean wheel
 installation was not tested in this environment.
+
+## In-app MCP controls
+
+The editor MCP dropdown was rebuilt successfully. An isolated native harness
+linked against the editor's build objects exercised the same controller used
+by the menu, with a real Streamable HTTP MCP client. Startup, readiness, live
+bridge connection, scene retrieval, stop/restart, project-close cleanup and
+occupied-port failure reporting passed. No game projects were used for these
+checks. The controller uses a separate bridge directory for each editor process.
+
+The companion regression run passed 18 tests; the Windows symlink check and the
+fixed-port HTTP test skipped. Port 8974 was occupied by an existing server, so
+the native integration test used a free local port instead. The existing server
+was not stopped. Validation compilation used the MSYS2 compiler's runtime DLL
+directory on `PATH` after correcting the test command's environment.

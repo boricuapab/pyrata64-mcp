@@ -145,6 +145,21 @@ Do not run the server manually in stdio mode and expect the client to attach to 
 
 ## Live editor bridge
 
+### Start inside Pyrite64
+
+In the updated [pyrite64mia editor](https://github.com/boricuapab/pyrite64mia),
+open a game and choose **MCP > Start Server**. On first use, browse to this
+companion repository, then click **Save and Start**. Its `.venv` must already be
+set up. The editor uses the open game automatically and defaults to port 8974.
+Repository/port choices stay in local editor preferences.
+
+The menu provides start/stop controls, status, a server log, and copyable client
+commands. Server processes stop on project close/change or editor exit. Each
+editor instance uses its own bridge directory. If the port is occupied, inspect
+the log and stop the old launcher or choose a different port in Server Settings.
+
+### Launch externally
+
 Install the bridge in your own Pyrite64 source checkout. Installation changes
 only `src/main.cpp` and adds `src/pyrite64_mcp_bridge.h`; the original main file
 is preserved as `src/main.cpp.mcp-backup`:
