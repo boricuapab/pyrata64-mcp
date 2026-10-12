@@ -30,6 +30,36 @@ images, videos and binaries are excluded from the index.
 
 ## Install
 
+### Easy Windows launcher
+
+Double-click **`run-win-pyrite64mcp.cmd`**, or run:
+
+```powershell
+.\run-win-pyrite64mcp.ps1
+```
+
+Choose live editor control, offline project editing, or documentation-only mode.
+Paste or drag your game folder (or `.p64proj` file) and editor executable into
+the prompts. The launcher remembers your locations in the Git-ignored
+`.pyrite64-mcp/launcher.json`. It works from any working directory, defaults to
+port **8974**, checks Python/dependencies and reports an occupied port clearly.
+Live mode can launch the rebuilt editor with the shared bridge directory.
+
+For first-time dependency setup, explicitly run:
+
+```powershell
+.\run-win-pyrite64mcp.ps1 -Setup
+```
+
+This requires Python 3.11+ and installs the MCP SDK into the repository's `.venv`.
+It does not download Python or rebuild the editor. The double-click wrapper uses
+an execution-policy override for its own process only, without changing system
+policy. For unattended documentation search, use `-Mode docs -NonInteractive`.
+Use `-Port` to change the endpoint or `-ValidateOnly` to check setup without
+starting a server. Delete `.pyrite64-mcp/launcher.json` to reset remembered choices.
+
+### Manual installation
+
 Requires Python 3.11 or newer. For builds, install Pyrite64 and its N64 toolchain.
 From the repository directory on Windows:
 
