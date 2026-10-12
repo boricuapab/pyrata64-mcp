@@ -3,6 +3,7 @@ import argparse
 import asyncio
 import json
 import os
+import shutil
 import subprocess
 import threading
 from pathlib import Path
@@ -32,7 +33,7 @@ Do not claim a ROM build, editor connection or full feature support without tool
 """
 
 
-def create_server(project_root=None, executable=None, mode="offline", bridge_dir=None, port=8974):
+def create_server(project_root=None, executable=None, mode="offline", bridge_dir=None, port=8974, ares_executable=None):
     project = Project(project_root) if project_root else None
     knowledge = Knowledge()
     bridge = Bridge(bridge_dir or Path.home() / ".pyrite64-mcp" / "bridge")
@@ -67,7 +68,7 @@ def create_server(project_root=None, executable=None, mode="offline", bridge_dir
     async def get_status() -> dict:
         """Report mode, project, executable, knowledge snapshot and actual editor connectivity."""
         result = {"mode": mode, "project": str(project.root) if project else None,
-                  "executable": executable, "port": port, "knowledge": knowledge.snapshot["metadata"],
+                  "executable": executable, "ares_executable": ares_executable, "port": port, "knowledge": knowledge.snapshot["metadata"],
                   "editor_connected": False, "scene_format": 2}
         if mode == "live" and project:
             try:
@@ -389,9 +390,29 @@ def create_server(project_root=None, executable=None, mode="offline", bridge_dir
         return {"path": str(target.relative_to(pr.root)), "bytes": target.stat().st_size,
                 "next_step": "Open the editor to import and assign an asset UUID"}
 
-    @mcp.tool(annotations=EDIT)
-    async def build_project(command: Literal["build", "clean"] = "build", timeout_seconds: int = 300) -> dict:
-        """Run the real Pyrite64 CLI build/clean without a shell. Requires --executable and installed N64 toolchain."""
+    def resolve_ares(pr, config, override):
+        configured = override or ares_executable
+        if not configured:
+            project_emulator = config.get("pathEmu", "")
+            if Path(project_emulator).stem.lower() == "ares":
+                configured = project_emulator
+            else:
+                configured = "ares"
+        candidate = Path(configured).expanduser()
+        if not candidate.is_absolute():
+            if candidate.parent == Path('.'):
+                found = shutil.which(configured)
+                if found:
+                    candidate = Path(found)
+                else:
+                    candidate = pr.root / candidate
+            else:
+                candidate = pr.root / candidate
+        if not candidate.is_file():
+            raise ValueError("Ares was not found. Set the project's emulator path to Ares, configure --ares/PYRITE64_ARES, or pass ares_path to build_and_run.")
+        return candidate.resolve()
+
+    async def perform_build(command, timeout_seconds, launch=False, ares_path=None):
         pr = require_project()
         if not executable:
             raise ValueError("Configure --executable /absolute/path/to/pyrite64.exe")
@@ -404,18 +425,65 @@ def create_server(project_root=None, executable=None, mode="offline", bridge_dir
         try:
             if mode == "live":
                 await save_project()
+            rom = emulator = previous_rom = None
+            if launch:
+                config = json.loads(pr.config.read_text(encoding="utf-8"))
+                emulator = resolve_ares(pr, config, ares_path)
+                rom = pr.path(str(config.get("romName", "pyrite64")) + ".z64")
+                if rom.exists():
+                    stat = rom.stat()
+                    previous_rom = (stat.st_mtime_ns, stat.st_ctime_ns, stat.st_size, stat.st_ino)
             def run():
                 creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
                 return subprocess.run(args, cwd=exe.parent, capture_output=True, text=True,
                                       errors="replace", timeout=max(1, min(timeout_seconds, 1800)),
                                       creationflags=creationflags, shell=False)
             result = await asyncio.to_thread(run)
-            return {"command": args, "returncode": result.returncode, "success": result.returncode == 0,
-                    "stdout": result.stdout[-24000:], "stderr": result.stderr[-8000:]}
+            response = {"command": args, "returncode": result.returncode, "success": result.returncode == 0,
+                        "stdout": result.stdout[-24000:], "stderr": result.stderr[-8000:]}
+            if launch:
+                response["emulator_launched"] = False
+                if result.returncode != 0:
+                    return response
+                if not rom.is_file() or rom.stat().st_size == 0:
+                    response["launch_error"] = "Build returned success but no nonempty ROM was produced."
+                    return response
+                stat = rom.stat()
+                if previous_rom == (stat.st_mtime_ns, stat.st_ctime_ns, stat.st_size, stat.st_ino):
+                    response["launch_error"] = "Build did not update the existing ROM; refusing to run a stale game."
+                    return response
+                # Recheck containment after the build in case the output became a link.
+                rom = pr.path(str(rom.relative_to(pr.root)))
+                launch_args = [str(emulator), "--system", "Nintendo 64", "--no-file-prompt", str(rom)]
+                try:
+                    child = subprocess.Popen(launch_args, cwd=emulator.parent, shell=False,
+                                             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                             stderr=subprocess.DEVNULL, close_fds=True)
+                except OSError as error:
+                    response["launch_error"] = str(error)
+                    return response
+                # Reap the GUI process asynchronously without waiting for the game to close.
+                threading.Thread(target=child.wait, name="ares-reaper", daemon=True).start()
+                response.update({"emulator_launched": True, "emulator_pid": child.pid,
+                                 "emulator_command": launch_args, "rom_path": str(rom)})
+            return response
         except subprocess.TimeoutExpired as exc:
             raise TimeoutError("Build exceeded timeout; the direct CLI process was stopped. Inspect any toolchain child processes.") from exc
         finally:
             build_lock.release()
+
+    @mcp.tool(annotations=EDIT)
+    async def build_project(command: Literal["build", "clean"] = "build", timeout_seconds: int = 300,
+                            run: bool = False) -> dict:
+        """Build/clean with the real Pyrite64 CLI. Set run=true to launch a successful fresh build in Ares. Live mode saves first."""
+        if run and command != "build":
+            raise ValueError("run=true requires command=build")
+        return await perform_build(command, timeout_seconds, launch=run)
+
+    @mcp.tool(annotations=EDIT)
+    async def build_and_run(timeout_seconds: int = 300, ares_path: str | None = None) -> dict:
+        """Save live changes, build the game and open its freshly built ROM in Ares. Uses project pathEmu, --ares/PYRITE64_ARES or Ares on PATH; ares_path overrides them for this call."""
+        return await perform_build("build", timeout_seconds, launch=True, ares_path=ares_path)
 
     @mcp.prompt()
     def pyrite64_workflow(task: str) -> str:
@@ -431,12 +499,13 @@ def main():
     parser.add_argument("--port", type=int, default=8974)
     parser.add_argument("--project", default=os.getenv("PYRITE64_PROJECT"))
     parser.add_argument("--executable", default=os.getenv("PYRITE64_EXECUTABLE"))
+    parser.add_argument("--ares", default=os.getenv("PYRITE64_ARES"))
     parser.add_argument("--mode", choices=["offline", "live"], default="offline")
     parser.add_argument("--bridge-dir", default=os.getenv("PYRITE64_MCP_BRIDGE_DIR"))
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error("port must be between 1 and 65535")
-    server = create_server(args.project, args.executable, args.mode, args.bridge_dir, args.port)
+    server = create_server(args.project, args.executable, args.mode, args.bridge_dir, args.port, args.ares)
     server.run(transport="streamable-http" if args.transport == "http" else "stdio")
 
 

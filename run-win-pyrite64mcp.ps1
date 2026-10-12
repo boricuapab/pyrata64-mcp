@@ -4,6 +4,7 @@ param(
     [ValidateSet('live', 'offline', 'docs')][string]$Mode,
     [string]$ProjectDirectory = $env:PYRITE64_PROJECT,
     [string]$Executable = $env:PYRITE64_EXECUTABLE,
+    [string]$AresExecutable = $env:PYRITE64_ARES,
     [string]$BridgeDirectory,
     [ValidateRange(1, 65535)][int]$Port = 8974,
     [switch]$StartEditor,
@@ -114,6 +115,7 @@ try {
     Write-Host "Codex:  codex mcp add pyrite64 --url http://127.0.0.1:$Port/mcp"
     Write-Host "Claude: claude mcp add --transport http pyrite64 http://127.0.0.1:$Port/mcp"
     $arguments = @{ Mode='offline'; Transport='http'; Port=$Port; BridgeDirectory=$BridgeDirectory; ProjectDirectory=''; Executable='' }
+    if ($AresExecutable) { $arguments.AresExecutable = $AresExecutable }
     if ($Mode -ne 'docs') {
         $arguments.Mode = $Mode
         $arguments.ProjectDirectory = $ProjectDirectory

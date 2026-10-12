@@ -40,3 +40,12 @@ fixed-port HTTP test skipped. Port 8974 was occupied by an existing server, so
 the native integration test used a free local port instead. The existing server
 was not stopped. Validation compilation used the MSYS2 compiler's runtime DLL
 directory on `PATH` after correcting the test command's environment.
+
+## Build and run
+
+The build-and-run tests use controlled build/emulator process substitutes to
+verify exact shell-free Ares arguments, paths containing spaces, live-save
+ordering, build failure handling, missing/empty/stale ROM rejection, launch
+failure reporting and lock cleanup. They do not claim a real ROM build or an
+actual Ares gameplay session. The MCP tools are exposed over the same standard
+transports; restarting an existing server is required to load the new tool.

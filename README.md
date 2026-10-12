@@ -225,7 +225,7 @@ save unsaved work, so this integration asks you to select scenes in the editor.
 | Components | `add_component`, `update_component`, `remove_component` |
 | Assets and scripts | `list_project_files`, `read_project_file`, `write_project_file`, `import_asset` |
 | Native editor | `select_object`, `save_project`, `reload_assets` |
-| N64 toolchain | `build_project` (`build` or `clean`) |
+| N64 toolchain | `build_project` (`build`/`clean`, optional `run=true`), `build_and_run` (build and launch Ares) |
 
 Resources expose the knowledge manifest and native component registry; the
 `pyrite64_workflow` prompt guides grounded game-development tasks.
@@ -252,12 +252,35 @@ project text require offline mode. Native component initialization, selection,
 asset reload and explicit editor save require live mode. Prefab overrides should
 be authored in the editor; direct object/component edits reject prefab instances.
 This version does not provide viewport screenshots, arbitrary code execution
-inside the editor, automatic emulator launching, or typed tools for every
+inside the editor, or typed tools for every
 material/graph/prefab UI operation. Source-grounded `.conf`, `.p64graph`, `.prefab`
 and C++ file tools cover those offline workflows. An actual ROM build requires a
 working Pyrite64 toolchain; an MCP connection alone does not establish that.
 
 ## Example requests
+
+### Build and launch Ares
+
+Ask the assistant **"Build and run my game in Ares."** It calls `build_and_run`:
+live mode saves the current project, builds using the Pyrite64 CLI, checks for a
+fresh nonempty `<romName>.z64` in the game folder, then launches Ares with the
+Nintendo 64 system selected. `build_project(run=true)` provides the same option.
+The tool returns promptly after launching the GUI; it does not wait for the game
+to close. Build failure, missing/stale ROMs and emulator launch failures are
+reported separately. A successful process launch does not verify gameplay.
+
+Set the project's **emulator path** to the Ares executable in Pyrite64 settings.
+The tool also supports Ares on `PATH`, a server-level `--ares` option or
+`PYRITE64_ARES` environment variable, and an `ares_path` override for an individual
+`build_and_run` call. The Windows launchers accept `-AresExecutable` as well.
+No installation paths are hardcoded. Restart the MCP server after updating it
+so the client discovers the new tool.
+
+When using the editor-managed server on Windows, Ares belongs to that server's
+process tree and closes when you stop the server or close the editor/project.
+The CLI arguments follow the [official Ares command-line documentation](https://github.com/ares-emulator/ares/blob/master/README.md).
+
+### Other tasks
 
 - "Search the docs for character bodies, then explain move-and-slide with API references."
 - "Inspect scene 1 and list the cameras, lights and collision components."

@@ -31,7 +31,7 @@ async def exercise(session, project):
     initialized = await session.initialize()
     assert initialized.serverInfo.name == "Pyrite64"
     tools = await session.list_tools()
-    assert {"get_status", "build_project", "search_knowledge", "create_object"} <= {tool.name for tool in tools.tools}
+    assert {"get_status", "build_project", "build_and_run", "search_knowledge", "create_object"} <= {tool.name for tool in tools.tools}
     status = payload(await session.call_tool("get_status"))
     assert status["port"] == 8974
     assert status["knowledge"]["counts"]["website"] > 150
