@@ -49,3 +49,16 @@ ordering, build failure handling, missing/empty/stale ROM rejection, launch
 failure reporting and lock cleanup. They do not claim a real ROM build or an
 actual Ares gameplay session. The MCP tools are exposed over the same standard
 transports; restarting an existing server is required to load the new tool.
+
+## Live game source updates
+
+41 regression tests passed; the fixed-port HTTP and Windows symlink checks
+skipped for the previously stated environment limitations. Tests cover repeated
+live writes, byte-preserving backups, stale revisions, disconnected editors,
+unsafe file classes and edits blocked during an MCP build.
+
+A real MCP client connected to the native controller's isolated open project,
+created and edited a C++ source file over the same connection, and verified that
+the scene JSON was unchanged afterward. No editor rebuild or scene reload is
+required for this companion-server feature. Source changes affect the compiled
+game after its next build; they do not patch an already running ROM.

@@ -240,15 +240,24 @@ Object transforms use meters and `[x,y,z,w]` quaternions. Component/asset UUIDs
 are uint64 values; pass component UUID tool arguments as decimal strings to
 avoid client-side floating-point precision loss. Object UUIDs are uint32.
 
-**Offline editing:** existing-file writes require the hash returned by a fresh
+**File editing:** existing-file writes require the hash returned by a fresh
 read, save original bytes in `.pyrite64-mcp/backups/`, and replace files atomically.
 New files can be written without a hash. Paths are confined to the configured
 project, with traversal, alternate streams, protected paths and escaping links
-rejected. Assets import without overwriting existing files. Close the project in
-the editor while using offline writes, to avoid its unsaved state overwriting them.
+rejected. Assets import without overwriting existing files. In offline mode,
+close the project before writing to avoid conflicts with unsaved editor state.
 
-**Current boundaries:** creating scenes, importing assets and writing arbitrary
-project text require offline mode. Native component initialization, selection,
+**Live game source edits:** `write_project_file` can update or create C/C++
+scripts and headers (`.cpp`, `.c`, `.h`, `.hpp`) under `src/user` while the scene
+and MCP connection stay open. It checks the editor connection, blocks writes
+during a build, and retains revision checks and backups. It does not save or
+reload the scene/assets, so unsaved scene changes stay in memory. The editor's
+existing watcher notices C++ script changes; headers are picked up by the next
+build. Use `build_project` or `build_and_run` to apply source changes to the game.
+This updates game source, not the editor or MCP implementation itself.
+
+**Current boundaries:** creating scenes, importing assets and writing project
+files other than supported game source require offline mode. Native component initialization, selection,
 asset reload and explicit editor save require live mode. Prefab overrides should
 be authored in the editor; direct object/component edits reject prefab instances.
 This version does not provide viewport screenshots, arbitrary code execution
